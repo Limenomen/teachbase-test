@@ -133,3 +133,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+TEACHBASE_URL = os.getenv('TEACHBASE_URL')
+TEACHBASE_SECRET_KEY = os.getenv('TEACHBASE_SECRET_KEY')
+TEACHBASE_PUBLIC_KEY = os.getenv('TEACHBASE_PUBLIC_KEY')
