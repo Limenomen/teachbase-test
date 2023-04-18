@@ -24,18 +24,17 @@ class APIClient:
         response.raise_for_status()
         return json.loads(response.content).get('access_token')
 
+    def _get_headers(self) -> dict:
+        return {'Content-type': 'application/json', 'Authorization': f'Bearer {self._get_access_token()}'}
+
     def make_get_request(self, endpoint: str, params: dict = None) -> dict | list:
         url = urljoin(self._base_url, endpoint)
-        response = requests.get(url=url, params=params,
-                                headers={'Content-type': 'application/json',
-                                         'Authorization': f'Bearer {self._get_access_token()}'})
+        response = requests.get(url=url, params=params, headers=self._get_headers())
         return json.loads(response.content)
 
     def make_post_request(self, endpoint: str, data: dict = None) -> dict | list:
         url = urljoin(self._base_url, endpoint)
-        response = requests.post(url=url, data=json.dumps(data, ensure_ascii=False),
-                                 headers={'Content-type': 'application/json',
-                                          'Authorization': f'Bearer {self._get_access_token()}'})
+        response = requests.post(url=url, data=json.dumps(data, ensure_ascii=False), headers=self._get_headers())
         return json.loads(response.content)
 
 
