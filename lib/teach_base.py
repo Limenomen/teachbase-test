@@ -7,6 +7,7 @@ from django.conf import settings
 
 
 class APIClient:
+    """Базовый класс для взаимодействия с API"""
     def __init__(self, client_id: str, client_secret: str, base_url: str):
         self._client_id = client_id
         self._client_secret = client_secret
@@ -39,6 +40,7 @@ class APIClient:
 
 
 class TeachbaseClient:
+    """Класс-обвязка для работы с API Teachbase"""
     def __init__(self):
         self.client = APIClient(client_id=settings.TEACHBASE_PUBLIC_KEY,
                                 client_secret=settings.TEACHBASE_SECRET_KEY,
@@ -61,22 +63,6 @@ class TeachbaseClient:
 
     def create_user(self, name: str, last_name: str, password: str, phone: str,
                     description: str = None, email: str = None) -> dict:
-        """
-        {
-          "users": [
-            {
-              "email": "test@teachbase.ru",
-              "name": "John",
-              "description": "Corrupti natus quia recusandae.",
-              "last_name": "Doe",
-              "phone": "string",
-              "role_id": 1,
-              "password": "qwerty"
-            }
-          ]
-        }
-        """
-
         data = {
             'users': [
                 {
@@ -91,3 +77,23 @@ class TeachbaseClient:
             ]
         }
         return self.client.make_post_request(endpoint='endpoint/v1/users/create/', data=data)
+
+    def get_course_sessions(self, course_id: int, status: str = None, participant_ids: List[int] = None) -> list:
+        params = {}
+
+        if status:
+            params.update({'status': status})
+        if participant_ids:
+            params.update({'participant_ids': participant_ids})
+
+        return self.client.make_get_request(endpoint=f'/endpoint/v1/courses/{course_id}/course_sessions/',
+                                            params=params)
+
+    def register_course_session_user(self, session_id: int, user_id: int, phone: int, email: str = None) -> dict:
+        data = {
+            'email': email,
+            'phone': phone,
+            'user_id': user_id,
+        }
+
+        return self.client.make_post_request(endpoint=f'endpoint/v1/course_sessions/{session_id}/register/', data=data)
