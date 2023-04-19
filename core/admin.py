@@ -1,3 +1,8 @@
 from django.contrib import admin
+from core import models
 
-# Register your models here.
+
+@admin.register(models.Course)
+class Course(admin.ModelAdmin):
+    list_display = ('name', 'owner_name', 'created_at')
+
