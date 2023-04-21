@@ -18,7 +18,7 @@ class SaveTeachbaseCourse(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request: Request, course_id: int) -> Response:
-        teachbase_course = datatools.courses.load_teachbase_course(course_id=course_id)
+        teachbase_course = datatools.courses.save_teachbase_course(course_id=course_id)
         return Response(serializers.Course(instance=teachbase_course).data)
 
 
