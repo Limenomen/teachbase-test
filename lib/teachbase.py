@@ -4,6 +4,11 @@ from urllib.parse import urljoin
 
 import requests
 from django.conf import settings
+from requests import HTTPError
+
+
+class APIException(Exception):
+    pass
 
 
 class APIClient:
@@ -30,13 +35,21 @@ class APIClient:
 
     def make_get_request(self, endpoint: str, params: dict = None) -> dict | list:
         url = urljoin(self._base_url, endpoint)
-        response = requests.get(url=url, params=params, headers=self._get_headers())
-        return json.loads(response.content)
+        try:
+            response = requests.get(url=url, params=params, headers=self._get_headers())
+            response.raise_for_status()
+            return json.loads(response.content)
+        except HTTPError as e:
+            raise APIException(e.response.content, e.response.status_code)
 
     def make_post_request(self, endpoint: str, data: dict = None) -> dict | list:
         url = urljoin(self._base_url, endpoint)
-        response = requests.post(url=url, data=json.dumps(data, ensure_ascii=False), headers=self._get_headers())
-        return json.loads(response.content)
+        try:
+            response = requests.post(url=url, data=json.dumps(data, ensure_ascii=False), headers=self._get_headers())
+            response.raise_for_status()
+            return json.loads(response.content)
+        except HTTPError as e:
+            raise APIException(e.response.content, e.response.status_code)
 
 
 class TeachbaseClient:
@@ -47,14 +60,7 @@ class TeachbaseClient:
                                 base_url=settings.TEACHBASE_URL)
 
     def get_courses_list(self, page: int = None, per_page: int = None, types: List[int] = None) -> list:
-        params = {}
-
-        if page:
-            params.update({'page': page})
-        if per_page:
-            params.update({'per_page': per_page})
-        if types:
-            params.update({'types': types})
+        params = self._parse_params(page=page, per_page=per_page, types=types)
 
         return self.client.make_get_request(endpoint='endpoint/v1/courses/', params=params)
 
@@ -79,12 +85,7 @@ class TeachbaseClient:
         return self.client.make_post_request(endpoint='endpoint/v1/users/create/', data=data)
 
     def get_course_sessions(self, course_id: int, status: str = None, participant_ids: List[int] = None) -> list:
-        params = {}
-
-        if status:
-            params.update({'status': status})
-        if participant_ids:
-            params.update({'participant_ids': participant_ids})
+        params = self._parse_params(status=status, participant_ids=participant_ids)
 
         return self.client.make_get_request(endpoint=f'/endpoint/v1/courses/{course_id}/course_sessions/',
                                             params=params)
@@ -97,3 +98,10 @@ class TeachbaseClient:
         }
 
         return self.client.make_post_request(endpoint=f'endpoint/v1/course_sessions/{session_id}/register/', data=data)
+
+    def _parse_params(self, **kwargs):
+        params = {}
+        for key, value in kwargs.items():
+            if value is not None:
+                params[key] = value
+        return params

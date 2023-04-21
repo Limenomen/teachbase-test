@@ -1,4 +1,4 @@
-from lib.teach_base import TeachbaseClient
+from lib.teachbase import TeachbaseClient
 from core import serializers
 
 
