@@ -9,6 +9,7 @@ from core import datatools, serializers
 
 class CourseViewSet(ReadOnlyModelViewSet):
     queryset = models.Course.objects.all()
+    serializer_class = serializers.Course
     permission_classes = (IsAuthenticated,)
 
 
