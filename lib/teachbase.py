@@ -18,21 +18,6 @@ class APIClient:
         self._client_secret = client_secret
         self._base_url = base_url
 
-    def _get_access_token(self) -> str:
-        # TODO проработать автоматическое обновление токена по истечении времени
-        url = urljoin(self._base_url, '/oauth/token')
-        response = requests.post(
-            url=url,
-            data={'client_id': self._client_id,
-                  'client_secret': self._client_secret,
-                  'grant_type': 'client_credentials'}
-        )
-        response.raise_for_status()
-        return json.loads(response.content).get('access_token')
-
-    def _get_headers(self) -> dict:
-        return {'Content-type': 'application/json', 'Authorization': f'Bearer {self._get_access_token()}'}
-
     def make_get_request(self, endpoint: str, params: dict = None) -> dict | list:
         url = urljoin(self._base_url, endpoint)
         try:
@@ -50,6 +35,21 @@ class APIClient:
             return json.loads(response.content)
         except HTTPError as e:
             raise APIException(e.response.content, e.response.status_code)
+
+    def _get_access_token(self) -> str:
+        # TODO проработать автоматическое обновление токена по истечении времени
+        url = urljoin(self._base_url, '/oauth/token')
+        response = requests.post(
+            url=url,
+            data={'client_id': self._client_id,
+                  'client_secret': self._client_secret,
+                  'grant_type': 'client_credentials'}
+        )
+        response.raise_for_status()
+        return json.loads(response.content).get('access_token')
+
+    def _get_headers(self) -> dict:
+        return {'Content-type': 'application/json', 'Authorization': f'Bearer {self._get_access_token()}'}
 
 
 class TeachbaseClient:
